@@ -57,6 +57,8 @@ process.env.DATABASE_URL = resolveDatabaseUrl();
 
 ensureSqliteFile(process.env.DATABASE_URL);
 
+ensureSqliteFile(process.env.DATABASE_URL);
+
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
 export const prisma =
