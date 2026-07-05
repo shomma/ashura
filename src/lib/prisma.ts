@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { mkdirSync, openSync, closeSync } from 'node:fs';
+import { closeSync, existsSync, mkdirSync, openSync } from 'node:fs';
+
 import { dirname } from 'node:path';
 
 function ensureSqliteFile(url: string) {
@@ -9,7 +10,11 @@ function ensureSqliteFile(url: string) {
   if (!dbPath) return;
 
   const parentDir = dirname(dbPath);
-  mkdirSync(parentDir, { recursive: true });
+  if (dbPath.startsWith('/')) {
+    if (!existsSync(parentDir)) return;
+  } else {
+    mkdirSync(parentDir, { recursive: true });
+  }
 
   const fd = openSync(dbPath, 'a');
   closeSync(fd);
