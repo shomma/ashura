@@ -3,8 +3,8 @@ services:
     name: ashura-web
     env: node
     plan: starter
-    buildCommand: npm ci --include=dev && npm run prisma:generate && DATABASE_URL=file:./data/ashura-build.db npx prisma db push --accept-data-loss && DATABASE_URL=file:./data/ashura-build.db npm run build
-    startCommand: npx prisma db push --accept-data-loss && npm run start
+    buildCommand: mkdir -p data && npm ci --include=dev && npm run prisma:generate && DATABASE_URL=file:./data/ashura-build.db npx prisma db push --accept-data-loss && DATABASE_URL=file:./data/ashura-build.db npm run build
+    startCommand: mkdir -p /var/data && DATABASE_URL=file:/var/data/ashura.db npx prisma db push --accept-data-loss && DATABASE_URL=file:/var/data/ashura.db npm run start
     autoDeploy: true
     disk:
       name: ashura-data

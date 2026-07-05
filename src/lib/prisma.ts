@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 
-process.env.DATABASE_URL ||= 'file:./data/ashura.db';
+process.env.DATABASE_URL ||=
+  process.env.NODE_ENV === 'production' ? 'file:/var/data/ashura.db' : 'file:./data/ashura.db';
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
