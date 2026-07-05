@@ -9,8 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "prisma:generate": "prisma generate",
-    "db:push": "prisma db push",
-    "sqlite:init": "prisma generate && prisma db push",
+    "db:push": "DATABASE_URL=${DATABASE_URL:-file:./data/ashura.db} prisma db push",
+    "sqlite:init": "prisma generate && DATABASE_URL=${DATABASE_URL:-file:./data/ashura.db} prisma db push",
     "build:migrate": "prisma db push && next build",
     "playwright:cycle05": "node scripts/playwright/cycle05-ux-validation.mjs"
   },

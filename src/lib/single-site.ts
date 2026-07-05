@@ -21,7 +21,32 @@ export function getConfiguredSingleSiteName() {
   return DEFAULT_SITE_NAME;
 }
 
+function isBuildPhase() {
+  return process.env.NEXT_PHASE?.includes('build') || process.env.NEXT_PHASE?.includes('export');
+}
+
+function createFallbackSite(): SiteLike {
+  const now = new Date();
+  return {
+    id: DEFAULT_SITE_ID,
+    name: DEFAULT_SITE_NAME,
+    createdAt: now,
+    updatedAt: now
+  };
+}
+
 export async function ensureSingleOwner() {
+  if (isBuildPhase()) {
+    return {
+      id: 'owner-local',
+      email: DEFAULT_OWNER_EMAIL,
+      passwordHash: '',
+      name: DEFAULT_OWNER_NAME,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+  }
+
   return prisma.user.upsert({
     where: { email: DEFAULT_OWNER_EMAIL },
     update: { name: DEFAULT_OWNER_NAME },
@@ -34,6 +59,10 @@ export async function ensureSingleOwner() {
 }
 
 export async function ensureSingleSite(): Promise<SiteLike> {
+  if (isBuildPhase()) {
+    return createFallbackSite();
+  }
+
   const owner = await ensureSingleOwner();
   const configuredId = getConfiguredSingleSiteId();
   const existing =
@@ -75,7 +104,9 @@ export async function resolveSingleSiteId() {
 }
 
 export async function requireSingleSite() {
-  await requireUser();
+  if (!isBuildPhase()) {
+    await requireUser();
+  }
   return ensureSingleSite();
 }
 
