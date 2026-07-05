@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: ashura-web
+    env: node
+    plan: starter
+    buildCommand: npm ci --include=dev && npm run prisma:generate && DATABASE_URL=file:./data/ashura-build.db npx prisma db push --accept-data-loss && DATABASE_URL=file:./data/ashura-build.db npm run build
+    startCommand: npx prisma db push --accept-data-loss && npm run start
+    autoDeploy: true
+    disk:
+      name: ashura-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: file:/var/data/ashura.db
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: SERPAPI_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: models/gemini-3-pro

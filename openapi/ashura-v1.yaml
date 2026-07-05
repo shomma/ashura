@@ -1,0 +1,1399 @@
+﻿openapi: 3.0.3
+info:
+  title: ASHURA API
+  version: 1.0.0
+  description: Phase1+Phase2 API (command-center, opportunities, radar, keywords).
+  license:
+    name: Proprietary
+    url: https://example.com/license
+servers:
+  - url: /api/v1
+security:
+  - bearerAuth: []
+tags:
+  - name: Dashboard
+    description: Command-center and radar endpoints.
+  - name: Opportunities
+    description: Opportunity list and detail endpoints.
+  - name: Tasks
+    description: Task outcome lifecycle endpoints.
+  - name: Keywords
+    description: Keyword discovery and detail endpoints.
+  - name: Insights
+    description: SEO and revenue insight endpoints.
+  - name: Jobs
+    description: Job orchestration endpoints.
+  - name: Settings
+    description: Scoring settings endpoint.
+paths:
+  /dashboard/command-center:
+    get:
+      tags: [Dashboard]
+      summary: Get command-center summary.
+      operationId: getCommandCenterSummary
+      parameters:
+        - $ref: '#/components/parameters/SiteId'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandCenterSummaryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /dashboard/radar/trend:
+    get:
+      tags: [Dashboard]
+      summary: Get radar trend signals.
+      operationId: getRadarTrend
+      parameters:
+        - $ref: '#/components/parameters/SiteId'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RadarResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /dashboard/radar/program:
+    get:
+      tags: [Dashboard]
+      summary: Get radar program signals.
+      operationId: getRadarProgram
+      parameters:
+        - $ref: '#/components/parameters/SiteId'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RadarResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /dashboard/radar/news:
+    get:
+      tags: [Dashboard]
+      summary: Get radar news signals.
+      operationId: getRadarNews
+      parameters:
+        - $ref: '#/components/parameters/SiteId'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RadarResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /opportunities:
+    get:
+      tags: [Opportunities]
+      summary: List opportunities.
+      operationId: listOpportunities
+      parameters:
+        - $ref: '#/components/parameters/SiteId'
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [open, in_review, done, archived]
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpportunityListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /opportunities/{opportunityId}:
+    get:
+      tags: [Opportunities]
+      summary: Get an opportunity detail.
+      operationId: getOpportunity
+      parameters:
+        - $ref: '#/components/parameters/SiteId'
+        - $ref: '#/components/parameters/OpportunityId'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpportunityResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /opportunities/{opportunityId}/tasks:
+    post:
+      tags: [Tasks]
+      summary: Create a task outcome for opportunity.
+      operationId: createOpportunityTaskOutcome
+      parameters:
+        - $ref: '#/components/parameters/SiteId'
+        - $ref: '#/components/parameters/OpportunityId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskOutcomeRequest'
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskOutcomeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /tasks/{taskId}:
+    patch:
+      tags: [Tasks]
+      summary: Update task outcome.
+      operationId: patchTaskOutcome
+      parameters:
+        - $ref: '#/components/parameters/SiteId'
+        - $ref: '#/components/parameters/TaskId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchTaskOutcomeRequest'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskOutcomeResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /keywords/discovery:
+    get:
+      tags: [Keywords]
+      summary: List discovered keywords.
+      operationId: listKeywordDiscovery
+      parameters:
+        - $ref: '#/components/parameters/SiteId'
+        - in: query
+          name: q
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeywordDiscoveryResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /keywords/{keywordId}:
+    get:
+      tags: [Keywords]
+      summary: Get keyword detail with SERP and signals.
+      operationId: getKeywordDetail
+      parameters:
+        - $ref: '#/components/parameters/SiteId'
+        - $ref: '#/components/parameters/KeywordId'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeywordDetailResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /prompts:
+    get:
+      tags: [Settings]
+      summary: List prompt presets.
+      operationId: listPromptPresets
+      parameters:
+        - $ref: '#/components/parameters/SiteId'
+        - in: query
+          name: q
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromptPresetListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/DefaultError'
+    post:
+      tags: [Settings]
+      summary: Create prompt preset.
+      operationId: createPromptPreset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePromptPresetRequest'
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromptPresetResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /prompts/{promptId}:
+    patch:
+      tags: [Settings]
+      summary: Update prompt preset.
+      operationId: patchPromptPreset
+      parameters:
+        - $ref: '#/components/parameters/PromptId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchPromptPresetRequest'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PromptPresetResponse'
+        default:
+          $ref: '#/components/responses/DefaultError'
+    delete:
+      tags: [Settings]
+      summary: Delete prompt preset.
+      operationId: deletePromptPreset
+      parameters:
+        - $ref: '#/components/parameters/PromptId'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: object
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /references:
+    get:
+      tags: [Settings]
+      summary: List references.
+      operationId: listReferences
+      parameters:
+        - $ref: '#/components/parameters/SiteId'
+        - in: query
+          name: q
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferenceListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/DefaultError'
+    post:
+      tags: [Settings]
+      summary: Create reference.
+      operationId: createReference
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReferenceRequest'
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReferenceResponse'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /references/{referenceId}:
+    delete:
+      tags: [Settings]
+      summary: Delete reference.
+      operationId: deleteReference
+      parameters:
+        - $ref: '#/components/parameters/ReferenceId'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: object
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /insights/seo:
+    get:
+      tags: [Insights]
+      summary: Get SEO insights.
+      operationId: getSeoInsights
+      parameters:
+        - $ref: '#/components/parameters/SiteId'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeywordSnapshotListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /insights/revenue:
+    get:
+      tags: [Insights]
+      summary: Get revenue insights.
+      operationId: getRevenueInsights
+      parameters:
+        - $ref: '#/components/parameters/SiteId'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RevenueInsightResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /settings/scoring:
+    patch:
+      tags: [Settings]
+      summary: Update scoring config.
+      operationId: patchScoringConfig
+      parameters:
+        - $ref: '#/components/parameters/SiteId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchScoringConfigRequest'
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScoringConfigResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/DefaultError'
+  /jobs/full-cycle:
+    post:
+      tags: [Jobs]
+      summary: Run full sync + recommendation generation for one site.
+      operationId: runFullCycle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - siteId
+              properties:
+                siteId:
+                  type: string
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        default:
+          $ref: '#/components/responses/DefaultError'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    SiteId:
+      in: query
+      name: siteId
+      required: true
+      schema:
+        type: string
+    OpportunityId:
+      in: path
+      name: opportunityId
+      required: true
+      schema:
+        type: string
+    TaskId:
+      in: path
+      name: taskId
+      required: true
+      schema:
+        type: string
+    KeywordId:
+      in: path
+      name: keywordId
+      required: true
+      schema:
+        type: string
+    PromptId:
+      in: path
+      name: promptId
+      required: true
+      schema:
+        type: string
+    ReferenceId:
+      in: path
+      name: referenceId
+      required: true
+      schema:
+        type: string
+    Limit:
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 200
+        default: 50
+  responses:
+    BadRequest:
+      description: Bad request.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+    DefaultError:
+      description: Error response.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+  schemas:
+    Meta:
+      type: object
+      required: [requestId, timestamp]
+      properties:
+        requestId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    ApiError:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+    SuccessEnvelope:
+      type: object
+      required: [ok, data, meta]
+      properties:
+        ok:
+          type: boolean
+          enum: [true]
+        data:
+          type: object
+          additionalProperties: true
+        meta:
+          $ref: '#/components/schemas/Meta'
+        error:
+          nullable: true
+          type: object
+    ErrorEnvelope:
+      type: object
+      required: [ok, meta, error]
+      properties:
+        ok:
+          type: boolean
+          enum: [false]
+        data:
+          nullable: true
+          type: object
+        meta:
+          $ref: '#/components/schemas/Meta'
+        error:
+          $ref: '#/components/schemas/ApiError'
+    SignalTypeEnum:
+      type: string
+      enum: [trend, program, news, serp]
+    SignalSourceEnum:
+      type: string
+      enum: [radar_trend, radar_program, radar_news, serp_google, serp_yahoo, manual]
+    KeywordIntentEnum:
+      type: string
+      enum: [informational, commercial, transactional, navigational]
+    RadarSignal:
+      type: object
+      required: [id, type, source, severity, score, title, observedAt, actionLabel, actionHref]
+      properties:
+        id:
+          type: string
+        type:
+          $ref: '#/components/schemas/SignalTypeEnum'
+        source:
+          $ref: '#/components/schemas/SignalSourceEnum'
+        severity:
+          type: string
+          enum: [info, warning, critical]
+        score:
+          type: number
+          format: float
+        title:
+          type: string
+        summary:
+          type: string
+          nullable: true
+        observedAt:
+          type: string
+          format: date-time
+        actionLabel:
+          type: string
+        actionHref:
+          type: string
+    OpportunityEvidence:
+      type: object
+      required: [id, kind, label]
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+        label:
+          type: string
+        value:
+          type: string
+          nullable: true
+        sourceUrl:
+          type: string
+          format: uri
+          nullable: true
+        observedAt:
+          type: string
+          format: date-time
+          nullable: true
+        payload:
+          type: object
+          nullable: true
+          additionalProperties: true
+    Opportunity:
+      type: object
+      required: [id, siteId, title, why, status, source, score, confidence, evidenceCount]
+      properties:
+        id:
+          type: string
+        siteId:
+          type: string
+        title:
+          type: string
+        why:
+          type: string
+        impact:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [open, in_review, done, archived]
+        source:
+          type: string
+        score:
+          type: number
+          format: float
+        confidence:
+          type: number
+          format: float
+        evidenceCount:
+          type: integer
+        evidences:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpportunityEvidence'
+        task:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+            status:
+              type: string
+            href:
+              type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    TaskOutcome:
+      type: object
+      required: [id, siteId, status, scoreDelta]
+      properties:
+        id:
+          type: string
+        siteId:
+          type: string
+        opportunityId:
+          type: string
+          nullable: true
+        taskId:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [pending, running, blocked, done]
+        outcome:
+          type: string
+          nullable: true
+        scoreDelta:
+          type: number
+          format: float
+        executedAt:
+          type: string
+          format: date-time
+          nullable: true
+        payload:
+          type: object
+          nullable: true
+          additionalProperties: true
+        taskHref:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    Alert:
+      type: object
+      required: [id, siteId, severity, message, status]
+      properties:
+        id:
+          type: string
+        siteId:
+          type: string
+        opportunityId:
+          type: string
+          nullable: true
+        taskId:
+          type: string
+          nullable: true
+        severity:
+          type: string
+          enum: [info, warning, critical]
+        channel:
+          type: string
+          nullable: true
+        message:
+          type: string
+        status:
+          type: string
+          enum: [open, acknowledged, resolved]
+        detectedAt:
+          type: string
+          format: date-time
+          nullable: true
+        resolvedAt:
+          type: string
+          format: date-time
+          nullable: true
+    ScoringConfig:
+      type: object
+      required: [id, siteId, version, opportunityWeights, isActive]
+      properties:
+        id:
+          type: string
+        siteId:
+          type: string
+        version:
+          type: integer
+        opportunityWeights:
+          type: object
+          additionalProperties:
+            type: number
+        taskWeights:
+          type: object
+          nullable: true
+          additionalProperties:
+            type: number
+        decayDays:
+          type: integer
+        isActive:
+          type: boolean
+        updatedAt:
+          type: string
+          format: date-time
+    KeywordSnapshot:
+      type: object
+      required: [id, siteId, keyword, provider, score, observedAt]
+      properties:
+        id:
+          type: string
+        siteId:
+          type: string
+        keyword:
+          type: string
+        provider:
+          type: string
+        score:
+          type: number
+          format: float
+        volume:
+          type: integer
+          nullable: true
+        observedAt:
+          type: string
+          format: date-time
+        payload:
+          type: object
+          nullable: true
+          additionalProperties: true
+    KeywordDiscoveryItem:
+      type: object
+      required: [id, term, normalizedTerm, status, priority, serpCount, signalCount, detailHref]
+      properties:
+        id:
+          type: string
+        term:
+          type: string
+        normalizedTerm:
+          type: string
+        intent:
+          type: string
+          enum: [informational, commercial, transactional, navigational]
+          nullable: true
+        status:
+          type: string
+        priority:
+          type: integer
+        difficulty:
+          type: number
+          format: float
+          nullable: true
+        volume:
+          type: integer
+          nullable: true
+        cpc:
+          type: number
+          format: float
+          nullable: true
+        latestSerpAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastSignalAt:
+          type: string
+          format: date-time
+          nullable: true
+        serpCount:
+          type: integer
+        signalCount:
+          type: integer
+        detailHref:
+          type: string
+    SerpSnapshot:
+      type: object
+      required: [id, provider, fetchedAt]
+      properties:
+        id:
+          type: string
+        provider:
+          type: string
+        locale:
+          type: string
+          nullable: true
+        device:
+          type: string
+          nullable: true
+        rank:
+          type: integer
+          nullable: true
+        url:
+          type: string
+          nullable: true
+        title:
+          type: string
+          nullable: true
+        snippet:
+          type: string
+          nullable: true
+        resultCount:
+          type: integer
+          nullable: true
+        fetchedAt:
+          type: string
+          format: date-time
+    KeywordOpportunityLink:
+      type: object
+      required: [id, title, status, href]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+        href:
+          type: string
+    KeywordDetail:
+      type: object
+      required:
+        [
+          id,
+          siteId,
+          term,
+          normalizedTerm,
+          status,
+          priority,
+          serps,
+          signals,
+          opportunities,
+          opportunitiesCtaHref,
+          keywordGraph
+        ]
+      properties:
+        id:
+          type: string
+        siteId:
+          type: string
+        term:
+          type: string
+        normalizedTerm:
+          type: string
+        intent:
+          type: string
+          enum: [informational, commercial, transactional, navigational]
+          nullable: true
+        status:
+          type: string
+        priority:
+          type: integer
+        difficulty:
+          type: number
+          format: float
+          nullable: true
+        volume:
+          type: integer
+          nullable: true
+        cpc:
+          type: number
+          format: float
+          nullable: true
+        latestSerpAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastSignalAt:
+          type: string
+          format: date-time
+          nullable: true
+        serps:
+          type: array
+          items:
+            $ref: '#/components/schemas/SerpSnapshot'
+        signals:
+          type: array
+          items:
+            $ref: '#/components/schemas/RadarSignal'
+        opportunities:
+          type: array
+          items:
+            $ref: '#/components/schemas/KeywordOpportunityLink'
+        opportunitiesCtaHref:
+          type: string
+        keywordGraph:
+          $ref: '#/components/schemas/KeywordGraph'
+    KeywordGraphNode:
+      type: object
+      required: [id, label, type, score]
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        type:
+          type: string
+        score:
+          type: number
+          format: float
+    KeywordGraphEdge:
+      type: object
+      required: [from, to, relation, weight]
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+        relation:
+          type: string
+        weight:
+          type: number
+          format: float
+    KeywordGraphCluster:
+      type: object
+      required: [id, label, count]
+      properties:
+        id:
+          type: string
+        label:
+          type: string
+        count:
+          type: integer
+    KeywordGraph:
+      type: object
+      required: [nodes, edges, clusters]
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/KeywordGraphNode'
+        edges:
+          type: array
+          items:
+            $ref: '#/components/schemas/KeywordGraphEdge'
+        clusters:
+          type: array
+          items:
+            $ref: '#/components/schemas/KeywordGraphCluster'
+    PromptPreset:
+      type: object
+      required: [id, name, category, prompt, isDefault]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        prompt:
+          type: string
+        isDefault:
+          type: boolean
+    ReferenceItem:
+      type: object
+      required: [id, title, tags]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        url:
+          type: string
+          nullable: true
+        note:
+          type: string
+          nullable: true
+        tags:
+          type: array
+          items:
+            type: string
+        taskId:
+          type: string
+          nullable: true
+        opportunityId:
+          type: string
+          nullable: true
+    CreatePromptPresetRequest:
+      type: object
+      required: [siteId, name, prompt]
+      properties:
+        siteId:
+          type: string
+        name:
+          type: string
+        category:
+          type: string
+        prompt:
+          type: string
+        isDefault:
+          type: boolean
+    PatchPromptPresetRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+        prompt:
+          type: string
+        isDefault:
+          type: boolean
+    CreateReferenceRequest:
+      type: object
+      required: [siteId, title]
+      properties:
+        siteId:
+          type: string
+        title:
+          type: string
+        url:
+          type: string
+        note:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        taskId:
+          type: string
+          nullable: true
+        opportunityId:
+          type: string
+          nullable: true
+    CommandCenterSummary:
+      type: object
+      required: [siteId, todayTop10, alerts, inProgress, yesterdayDelta]
+      properties:
+        siteId:
+          type: string
+        todayTop10:
+          type: object
+          required: [count, items]
+          properties:
+            count:
+              type: integer
+            items:
+              type: array
+              items:
+                type: object
+                required: [id, title, status, score, confidence]
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  status:
+                    type: string
+                  score:
+                    type: number
+                    format: float
+                  confidence:
+                    type: number
+                    format: float
+        alerts:
+          type: object
+          required: [count, critical, warning, recent]
+          properties:
+            count:
+              type: integer
+            critical:
+              type: integer
+            warning:
+              type: integer
+            recent:
+              type: array
+              items:
+                $ref: '#/components/schemas/Alert'
+        inProgress:
+          type: object
+          required: [tasks, outcomes, total]
+          properties:
+            tasks:
+              type: integer
+            outcomes:
+              type: integer
+            total:
+              type: integer
+        yesterdayDelta:
+          type: object
+          required: [scoreDelta, completed]
+          properties:
+            scoreDelta:
+              type: number
+              format: float
+            completed:
+              type: integer
+    RevenueInsight:
+      type: object
+      required: [siteId, expectedImpactTotal, completedImpact]
+      properties:
+        siteId:
+          type: string
+        expectedImpactTotal:
+          type: number
+          format: float
+        completedImpact:
+          type: number
+          format: float
+        currency:
+          type: string
+          default: JPY
+    CreateTaskOutcomeRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        action:
+          type: string
+        source:
+          type: string
+        status:
+          type: string
+          enum: [pending, running, blocked, done]
+        payload:
+          type: object
+          additionalProperties: true
+    OpportunityDetail:
+      allOf:
+        - $ref: '#/components/schemas/Opportunity'
+        - type: object
+          required: [evidence, linkedTasks]
+          properties:
+            evidence:
+              type: array
+              items:
+                $ref: '#/components/schemas/OpportunityEvidence'
+            linkedTasks:
+              type: array
+              items:
+                type: object
+                required: [id, title, status, href, createdAt]
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                  status:
+                    type: string
+                  href:
+                    type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+    PatchTaskOutcomeRequest:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [pending, running, blocked, done]
+        outcome:
+          type: string
+        scoreDelta:
+          type: number
+          format: float
+        payload:
+          type: object
+          additionalProperties: true
+    PatchScoringConfigRequest:
+      type: object
+      required: [opportunityWeights]
+      properties:
+        opportunityWeights:
+          type: object
+          additionalProperties:
+            type: number
+        taskWeights:
+          type: object
+          additionalProperties:
+            type: number
+        decayDays:
+          type: integer
+          minimum: 1
+          maximum: 365
+        isActive:
+          type: boolean
+    CommandCenterSummaryResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/CommandCenterSummary'
+    RadarResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [siteId, radar, items]
+              properties:
+                siteId:
+                  type: string
+                radar:
+                  type: string
+                  enum: [trend, program, news]
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/RadarSignal'
+    OpportunityListResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Opportunity'
+    OpportunityResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/OpportunityDetail'
+    TaskOutcomeResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/TaskOutcome'
+    KeywordDiscoveryResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [siteId, items]
+              properties:
+                siteId:
+                  type: string
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/KeywordDiscoveryItem'
+    KeywordDetailResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/KeywordDetail'
+    PromptPresetResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/PromptPreset'
+    PromptPresetListResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [siteId, items]
+              properties:
+                siteId:
+                  type: string
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/PromptPreset'
+    ReferenceResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ReferenceItem'
+    ReferenceListResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [siteId, items]
+              properties:
+                siteId:
+                  type: string
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ReferenceItem'
+    KeywordSnapshotListResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/KeywordSnapshot'
+    RevenueInsightResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/RevenueInsight'
+    ScoringConfigResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ScoringConfig'

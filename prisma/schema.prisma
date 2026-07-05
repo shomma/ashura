@@ -1,0 +1,395 @@
+// Prisma schema for ASHURA core
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  sites        Site[]
+}
+
+model Site {
+  id                String            @id @default(cuid())
+  ownerId           String
+  owner             User              @relation(fields: [ownerId], references: [id])
+  name              String
+  tasks             Task[]
+  opportunities     Opportunity[]
+  keywords          Keyword[]
+  serps             Serp[]
+  signals           Signal[]
+  taskOutcomes      TaskOutcome[]
+  alerts            Alert[]
+  scoringConfigs    ScoringConfig[]
+  keywordSnapshots  KeywordSnapshot[]
+  promptPresets     PromptPreset[]
+  referenceItems    ReferenceItem[]
+  recommendations   Recommendation[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model Channel {
+  id        String    @id
+  name      String
+  area      Int
+  programs  Program[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model EpgHtml {
+  id        String    @id @default(cuid())
+  area      Int
+  head      String
+  date      DateTime
+  url       String
+  html      String
+  size      Int
+  programs  Program[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([area, date])
+}
+
+model Program {
+  id         String   @id @default(cuid())
+  epgId      String
+  channelId  String
+  date       DateTime
+  start      DateTime
+  end        DateTime
+  title      String
+  summary    String?
+  url        String?
+  key        String
+  searchText String
+  epg        EpgHtml  @relation(fields: [epgId], references: [id], onDelete: Cascade)
+  channel    Channel  @relation(fields: [channelId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([channelId, start, key])
+  @@index([date])
+  @@index([channelId])
+  @@index([searchText])
+}
+
+model WatchKeyword {
+  id        String   @id @default(cuid())
+  keyword   String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Task {
+  id                     String                   @id @default(cuid())
+  siteId                 String
+  site                   Site                     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  opportunityId          String?
+  opportunity            Opportunity?             @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  source                 String
+  action                 String
+  status                 String                   @default("pending")
+  title                  String
+  dedupeKey              String
+  payload                String?
+  recommendationSourceId String?
+  recommendationType     String?
+  recommendationReason   String?
+  recommendationEvidence String?
+  recommendedDueAt       DateTime?
+  recommendationLinks    RecommendationTaskLink[]
+  referenceItems         ReferenceItem[]
+  taskOutcomes           TaskOutcome[]
+  alerts                 Alert[]
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+
+  @@unique([siteId, dedupeKey])
+  @@index([siteId, status])
+  @@index([siteId, opportunityId])
+}
+
+model Opportunity {
+  id             String                @id @default(cuid())
+  siteId         String
+  site           Site                  @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  title          String
+  summary        String?
+  why            String?
+  impact         String?
+  status         String                @default("open")
+  source         String
+  score          Float                 @default(0)
+  impactScore    Float                 @default(0)
+  confidence     Float                 @default(0)
+  category       String?
+  tags           String              @default("[]")
+  observedAt     DateTime?
+  resolvedAt     DateTime?
+  evidences      OpportunityEvidence[]
+  signals        Signal[]
+  tasks          Task[]
+  taskOutcomes   TaskOutcome[]
+  referenceItems ReferenceItem[]
+  alerts         Alert[]
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+
+  @@index([siteId, status, score])
+  @@index([siteId, observedAt])
+}
+
+model Keyword {
+  id             String         @id @default(cuid())
+  siteId         String
+  site           Site           @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  term           String
+  normalizedTerm String
+  intent         String?
+  priority       Int            @default(50)
+  difficulty     Float?
+  volume         Int?
+  cpc            Float?
+  status         String         @default("active")
+  latestSerpAt   DateTime?
+  lastSignalAt   DateTime?
+  discoveredAt   DateTime       @default(now())
+  serps          Serp[]
+  signals        Signal[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@unique([siteId, normalizedTerm])
+  @@index([siteId, status, priority])
+  @@index([siteId, lastSignalAt])
+}
+
+model Serp {
+  id          String   @id @default(cuid())
+  siteId      String
+  site        Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  keywordId   String
+  keyword     Keyword  @relation(fields: [keywordId], references: [id], onDelete: Cascade)
+  provider    String
+  locale      String?
+  device      String?
+  rank        Int?
+  url         String?
+  title       String?
+  snippet     String?
+  resultCount Int?
+  fetchedAt   DateTime
+  payload     String?
+  signals     Signal[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([siteId, keywordId, fetchedAt])
+  @@index([siteId, provider, fetchedAt])
+}
+
+model Signal {
+  id            String       @id @default(cuid())
+  siteId        String
+  site          Site         @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  keywordId     String?
+  keyword       Keyword?     @relation(fields: [keywordId], references: [id], onDelete: SetNull)
+  serpId        String?
+  serp          Serp?        @relation(fields: [serpId], references: [id], onDelete: SetNull)
+  opportunityId String?
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  type          String
+  source        String
+  severity      String       @default("info")
+  score         Float        @default(0)
+  title         String
+  summary       String?
+  observedAt    DateTime
+  actionLabel   String?
+  actionHref    String?
+  payload       String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([siteId, type, observedAt])
+  @@index([siteId, keywordId, observedAt])
+  @@index([siteId, opportunityId])
+}
+
+model OpportunityEvidence {
+  id            String      @id @default(cuid())
+  opportunityId String
+  opportunity   Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  kind          String
+  label         String
+  value         String?
+  sourceUrl     String?
+  observedAt    DateTime?
+  payload       String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([opportunityId])
+}
+
+model TaskOutcome {
+  id            String       @id @default(cuid())
+  siteId        String
+  site          Site         @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  opportunityId String?
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  taskId        String?
+  task          Task?        @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  status        String       @default("pending")
+  outcome       String?
+  scoreDelta    Float        @default(0)
+  executedAt    DateTime?
+  payload       String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([siteId, status])
+  @@index([siteId, executedAt])
+  @@index([opportunityId])
+  @@index([taskId])
+}
+
+model Alert {
+  id            String       @id @default(cuid())
+  siteId        String
+  site          Site         @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  opportunityId String?
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  taskId        String?
+  task          Task?        @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  severity      String
+  channel       String?
+  message       String
+  status        String       @default("open")
+  detectedAt    DateTime?
+  resolvedAt    DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([siteId, severity, status])
+  @@index([opportunityId])
+  @@index([taskId])
+}
+
+model ScoringConfig {
+  id                 String   @id @default(cuid())
+  siteId             String
+  site               Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  version            Int      @default(1)
+  opportunityWeights String   @default("{}")
+  taskWeights        String?
+  decayDays          Int      @default(30)
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([siteId, version])
+  @@index([siteId, isActive])
+}
+
+model KeywordSnapshot {
+  id         String   @id @default(cuid())
+  siteId     String
+  site       Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  keyword    String
+  provider   String
+  score      Float
+  volume     Int?
+  observedAt DateTime
+  payload    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([siteId, keyword, observedAt])
+  @@index([observedAt])
+}
+
+model Recommendation {
+  id                String                   @id @default(cuid())
+  siteId            String
+  site              Site                     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  dedupeKey         String
+  type              String
+  title             String
+  reason            String
+  evidence          String?
+  priority          Int                      @default(50)
+  expectedImpact    String?
+  status            String                   @default("pending")
+  dueAt             DateTime?
+  taskLinks         RecommendationTaskLink[]
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
+
+  @@unique([siteId, dedupeKey])
+  @@index([siteId, status, priority])
+  @@index([siteId, dueAt])
+}
+
+model RecommendationTaskLink {
+  id               String         @id @default(cuid())
+  recommendationId String
+  taskId           String
+  recommendation   Recommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  task             Task           @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  createdAt        DateTime       @default(now())
+
+  @@unique([recommendationId, taskId])
+  @@index([taskId])
+}
+
+model PromptPreset {
+  id        String   @id @default(cuid())
+  siteId    String
+  site      Site     @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  name      String
+  category  String
+  prompt    String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([siteId, name])
+  @@index([siteId, category])
+  @@index([siteId, isDefault])
+}
+
+model ReferenceItem {
+  id            String       @id @default(cuid())
+  siteId        String
+  site          Site         @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  taskId        String?
+  task          Task?        @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  opportunityId String?
+  opportunity   Opportunity? @relation(fields: [opportunityId], references: [id], onDelete: SetNull)
+  title         String
+  url           String?
+  note          String?
+  tags          String       @default("[]")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([siteId, createdAt])
+  @@index([siteId, taskId])
+  @@index([siteId, opportunityId])
+}
